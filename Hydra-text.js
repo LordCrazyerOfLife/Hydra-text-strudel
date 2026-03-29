@@ -1,4 +1,28 @@
 {
+    const isHydraCandidate = function (h) {
+        return Boolean(
+            h &&
+            (
+                h.regl ||
+                h.s?.[0] ||
+                h.synth?.regl ||
+                h.synth?.s?.[0]
+            )
+        );
+    };
+    const normalizeHydra = function (hydra) {
+        if (!hydra) return null;
+        const synth = hydra.synth || hydra;
+        return Object.assign({}, hydra, {
+            synth,
+            s: hydra.s || synth.s,
+            regl: hydra.regl || synth.regl,
+            pb: hydra.pb || synth.pb,
+            width: hydra.width || synth.width || hydra.canvas?.width || synth.canvas?.width,
+            height: hydra.height || synth.height || hydra.canvas?.height || synth.canvas?.height,
+            canvas: hydra.canvas || synth.canvas || document.querySelector("canvas")
+        });
+    };
     const getHydra = function () {
         const whereami = window.location?.href?.includes("hydra.ojack.xyz")
             ? "editor"
@@ -18,9 +42,12 @@
             window.hydra,
             window.h,
             window.H,
-            window.hy
-        ].find(h => h?.regl);
-        return _h;
+            window.hy,
+            globalThis.hydraSynth,
+            globalThis._hydra,
+            globalThis.hydra
+        ].find(isHydraCandidate);
+        return normalizeHydra(_h);
     };
     const getHydraScope = function (hydra) {
         if (!hydra) return window;
@@ -30,6 +57,11 @@
     };
     window._hydra = getHydra();
     window._hydraScope = getHydraScope(window._hydra);
+    if (!_hydra?.s?.[0]) {
+        throw new Error(
+            "[hydra-text] Could not find a compatible Hydra instance. In Strudel, load this after Hydra is initialized and expose the Hydra object on a global such as window.hydraSynth."
+        );
+    }
 }
 
 _hydraScope.srcRelMask = function (tex) {
