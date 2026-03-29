@@ -5,30 +5,33 @@
             : window.atom?.packages
             ? "atom"
             : "idk";
+
         if (whereami === "editor") {
             return window.hydraSynth;
         }
+
         if (whereami === "atom") {
-            return global.atom.packages.loadedPackages["atom-hydra"]
-                .mainModule.main.hydra;
+            return global.atom?.packages?.loadedPackages?.["atom-hydra"]?.mainModule?.main?.hydra || null;
         }
-        let _h = [
+
+        // fallback search for any global Hydra-like object
+        return [
             window.hydraSynth,
             window._hydra,
             window.hydra,
             window.h,
             window.H,
             window.hy
-        ].find(h => h); // pick the first truthy object
-        return _h;
+        ].find(h => h?.regl) || null;
     };
+
     window._hydra = getHydra();
-    if (_hydra?.sandbox?.makeGlobal !== undefined) {     // safe handling for Strudel or other Hydra-like objects
-        window._hydraScope = _hydra.sandbox.makeGlobal ? window : _hydra.synth;
-    } else if (_hydra) {
-        window._hydraScope = _hydra; // fallback for Strudel
+
+    // safe assignment for _hydraScope
+    if (_hydra) {
+        window._hydraScope = _hydra.sandbox?.makeGlobal ? window : (_hydra.synth || _hydra);
     } else {
-        window._hydraScope = {};
+        window._hydraScope = null; // fallback if nothing found
     }
 }
 _hydraScope.srcRelMask = function (tex) {
