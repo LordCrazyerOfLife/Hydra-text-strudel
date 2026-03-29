@@ -28,7 +28,6 @@
     } else if (_hydra) {
         window._hydraScope = _hydra; // fallback for Strudel
     } else {
-        console.warn("No Hydra or Strudel instance found.");
         window._hydraScope = {};
     }
 }
